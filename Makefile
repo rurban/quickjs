@@ -35,6 +35,11 @@ CONFIG_LTO=y
 #CONFIG_M32=y
 
 ifdef CONFIG_DARWIN
+OS_VER=$(shell uname -r | cut -f1 -d.)
+# no clock_gettime until Sierra v10.12 / 16.0.0
+ifeq ($(shell test $(OS_VER) -le 15; echo $$?),0)
+CONFIG_OLDDARWIN=y
+endif
 # use clang instead of gcc
 CONFIG_CLANG=y
 CONFIG_DEFAULT_AR=y
@@ -94,6 +99,9 @@ ifdef CONFIG_WERROR
 CFLAGS+=-Werror
 endif
 DEFINES:=-D_GNU_SOURCE -DCONFIG_VERSION=\"$(shell cat VERSION)\"
+ifdef CONFIG_OLDDARWIN
+DEFINES+=-DCONFIG_OLDDARWIN
+endif
 CFLAGS+=$(DEFINES)
 CFLAGS_DEBUG=$(CFLAGS) -O0
 CFLAGS_SMALL=$(CFLAGS) -Os
@@ -156,6 +164,9 @@ endif
 all: $(OBJDIR) $(OBJDIR)/quickjs.check.o $(OBJDIR)/qjs.check.o $(PROGS)
 
 QJS_LIB_OBJS=$(OBJDIR)/quickjs.o $(OBJDIR)/libregexp.o $(OBJDIR)/libunicode.o $(OBJDIR)/cutils.o $(OBJDIR)/quickjs-libc.o
+ifdef CONFIG_OLDDARWIN
+QJS_LIB_OBJS+=$(OBJDIR)/libolddarwin.o
+endif
 
 QJSBN_LIB_OBJS=$(patsubst %.o, %.bn.o, $(QJS_LIB_OBJS)) $(OBJDIR)/libbf.bn.o
 

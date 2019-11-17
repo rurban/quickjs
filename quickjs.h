@@ -915,6 +915,13 @@ int JS_SetModuleExportList(JSContext *ctx, JSModuleDef *m,
 #undef js_unlikely
 #undef js_force_inline
 
+#ifdef CONFIG_OLDDARWIN
+/* no clock_gettime until MacOS Sierra */
+#define CLOCK_MONOTONIC 0
+#define CLOCK_REALTIME	1
+int clock_gettime (int clk_id, struct timespec *ts);
+#endif
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
